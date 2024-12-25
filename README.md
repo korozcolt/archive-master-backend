@@ -1,99 +1,155 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Archive Master 📁
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+![Archive Master Logo](https://i.ibb.co/whRY9b8/logo.png)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Descripción del Proyecto
 
-## Description
+Archive Master es un sistema de gestión documental avanzado, diseñado para optimizar el almacenamiento, organización y flujo de trabajo de documentos en entornos empresariales. Desarrollado con tecnologías de vanguardia, ofrece una solución integral para la administración eficiente de documentos.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🛠️ Tecnologías Principales
 
-## Project setup
+### Backend
+- NestJS
+- TypeORM
+- MySQL
+- Redis
+- Passport.js (Autenticación)
+- Swagger (Documentación de API)
 
+### Frontend
+- Next.js
+- React
+- Tailwind CSS
+
+## ✨ Características Principales
+
+- 📄 Gestión completa de documentos
+- 🔒 Sistema de autenticación y autorización robusto
+- 📊 Flujos de trabajo personalizables
+- 🔍 Motor de búsqueda avanzado
+- 📈 Versionado de documentos
+- 🏷️ Sistema de categorías y etiquetas
+- 📝 Gestión de permisos granular
+
+## 🚧 Módulos
+
+- [x] Autenticación
+- [x] Usuarios
+- [x] Roles y Permisos
+- [x] Categorías
+- [x] Status y Transiciones
+- [x] Tags
+- [x] Configuraciones
+- [x] Templates
+- [x] Documentos
+- [ ] Workflow Engine
+- [ ] Búsqueda Avanzada
+- [ ] Auditoría
+- [ ] Reportes
+- [ ] Notificaciones
+
+## 🔧 Requisitos Previos
+
+- Node.js (v18+)
+- npm (v9+)
+- MySQL
+- Redis
+
+## 📦 Instalación
+
+1. Clonar el repositorio
 ```bash
-$ npm install
+git clone https://github.com/tu-usuario/archive-master.git
+cd archive-master
 ```
 
-## Compile and run the project
-
+2. Instalar dependencias del backend
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd backend
+npm install
 ```
 
-## Run tests
+3. Configurar variables de entorno
+- Crear un archivo `.env` basado en `.env.example`
+- Configurar credenciales de base de datos
+- Configurar credenciales de Redis
+- Establecer secretos de JWT
 
+4. Iniciar base de datos
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run migration:run
+npm run seed
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+5. Iniciar servidor de desarrollo
 ```bash
-$ npm install -g mau
-$ mau deploy
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 🔐 Autenticación
 
-## Resources
+El sistema utiliza JWT para autenticación. Los usuarios pueden:
+- Registrarse
+- Iniciar sesión
+- Gestionar perfiles
+- Recuperar contraseña
 
-Check out a few resources that may come in handy when working with NestJS:
+## 📋 Estructura del Proyecto
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+archive-master/
+├── backend/
+│   ├── src/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── users/
+│   │   │   ├── documents/
+│   │   │   └── ...
+│   │   ├── common/
+│   │   └── config/
+│   ├── migrations/
+│   └── tests/
+└── frontend/
+    ├── components/
+    ├── pages/
+    └── styles/
+```
 
-## Support
+## 🧪 Pruebas
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Ejecutar pruebas unitarias
+npm run test
 
-## Stay in touch
+# Ejecutar pruebas end-to-end
+npm run test:e2e
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🤝 Contribuciones
 
-## License
+1. Haz un fork del proyecto
+2. Crea tu rama de características (`git checkout -b feature/AmazingFeature`)
+3. Commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📄 Licencia
+
+Distribuido bajo la Licencia MIT. Consulte `LICENSE` para más información.
+
+## 📞 Contacto
+
+- Desarrollador: [Tu Nombre]
+- Correo: [tu.correo@ejemplo.com]
+- LinkedIn: [Perfil de LinkedIn]
+
+## 🌟 Agradecimientos
+
+- [NestJS](https://nestjs.com/)
+- [TypeORM](https://typeorm.io/)
+- [Redis](https://redis.io/)
+- [Swagger](https://swagger.io/)
+
+---
+
+**🚀 Desarrollado con ❤️ para revolucionar la gestión documental**
