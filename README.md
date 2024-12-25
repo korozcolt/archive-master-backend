@@ -139,9 +139,9 @@ Distribuido bajo la Licencia MIT. Consulte `LICENSE` para más información.
 
 ## 📞 Contacto
 
-- Desarrollador: [Tu Nombre]
-- Correo: [tu.correo@ejemplo.com]
-- LinkedIn: [Perfil de LinkedIn]
+- Desarrollador: Kristian Orozco
+- Correo: [ing.korozco@gmail.com]
+- LinkedIn: [https://www.linkedin.com/in/kristian-orozco-backend/]
 
 ## 🌟 Agradecimientos
 
