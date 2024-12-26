@@ -1,6 +1,6 @@
 # Archive Master 📁
 
-![Archive Master Logo](https://i.ibb.co/whRY9b8/logo.png)
+![Archive Master Logo](https://i.ibb.co/HPRbSNM/archive-master-blanco.png)
 ![Desarrollo](https://img.shields.io/badge/status-en%20desarrollo-yellow) ![Versión](https://img.shields.io/badge/version-0.1.0-blue) ![Licencia](https://img.shields.io/badge/license-MIT-green) ![NestJS](https://img.shields.io/badge/NestJS-v10-E0234E?style=flat&logo=nestjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?style=flat&logo=typescript&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-v8-4479A1?style=flat&logo=mysql&logoColor=white)
 
 ## 🚀 Descripción del Proyecto
