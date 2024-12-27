@@ -1,24 +1,31 @@
 // src/modules/categories/categories.service.ts
+
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CacheManagerService } from '@/config/redis/cache-manager.service';
+import { Cacheable, CacheEvict } from '@/common/decorators/cache.decorator';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly cacheManager: CacheManagerService,
   ) {}
 
+  @CacheEvict('categories:*')
   async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<Category> {
-    const category = this.categoryRepository.create({
-      ...createCategoryDto,
-      createdById: userId,
-      updatedById: userId,
+    const existingCategory = await this.categoryRepository.findOne({
+      where: { name: createCategoryDto.name },
     });
+
+    if (existingCategory) {
+      throw new BadRequestException('Category with this name already exists');
+    }
 
     if (createCategoryDto.parentId) {
       const parent = await this.categoryRepository.findOne({
@@ -29,9 +36,19 @@ export class CategoriesService {
       }
     }
 
+    const category = this.categoryRepository.create({
+      ...createCategoryDto,
+      createdById: userId,
+      updatedById: userId,
+    });
+
     return this.categoryRepository.save(category);
   }
 
+  @Cacheable({
+    prefix: 'categories',
+    ttl: 3600, // 1 hora
+  })
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({
       relations: ['parent', 'children'],
@@ -42,6 +59,11 @@ export class CategoriesService {
     });
   }
 
+  @Cacheable({
+    prefix: 'categories',
+    ttl: 3600,
+    keyGenerator: (id: string) => `category:${id}`,
+  })
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id },
@@ -55,6 +77,7 @@ export class CategoriesService {
     return category;
   }
 
+  @CacheEvict('categories:*')
   async update(
     id: string,
     updateCategoryDto: UpdateCategoryDto,
@@ -62,7 +85,6 @@ export class CategoriesService {
   ): Promise<Category> {
     const category = await this.findOne(id);
 
-    // Verificar que no se esté creando un ciclo en la jerarquía
     if (updateCategoryDto.parentId) {
       const parent = await this.findOne(updateCategoryDto.parentId);
       let currentParent = parent;
@@ -83,10 +105,10 @@ export class CategoriesService {
     return this.categoryRepository.save(category);
   }
 
+  @CacheEvict('categories:*')
   async remove(id: string): Promise<void> {
     const category = await this.findOne(id);
 
-    // Verificar si tiene subcategorías
     if (category.children && category.children.length > 0) {
       throw new BadRequestException('Cannot delete category with subcategories');
     }
@@ -94,6 +116,11 @@ export class CategoriesService {
     await this.categoryRepository.remove(category);
   }
 
+  @Cacheable({
+    prefix: 'categories',
+    ttl: 3600,
+    keyGenerator: () => 'tree',
+  })
   async getTree(): Promise<Category[]> {
     const categories = await this.categoryRepository.find({
       relations: ['children'],
@@ -115,6 +142,7 @@ export class CategoriesService {
     return result;
   }
 
+  @CacheEvict('categories:*')
   async reorder(id: string, newOrder: number, userId: string): Promise<Category> {
     const category = await this.findOne(id);
     category.order = newOrder;
@@ -122,6 +150,7 @@ export class CategoriesService {
     return this.categoryRepository.save(category);
   }
 
+  @CacheEvict('categories:*')
   async toggleActive(id: string, userId: string): Promise<Category> {
     const category = await this.findOne(id);
     category.isActive = !category.isActive;
@@ -130,8 +159,6 @@ export class CategoriesService {
   }
 
   async validateMetadataSchema(schema: Record<string, any>): Promise<boolean> {
-    // Aquí podrías implementar la validación del esquema JSON
-    // Por ahora solo verificamos que sea un objeto válido
     try {
       JSON.stringify(schema);
       return true;

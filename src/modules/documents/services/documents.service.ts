@@ -10,6 +10,7 @@ import { User } from '../../users/entities/user.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { Repository } from 'typeorm';
 import { VersioningService } from '@/common/versioning/services/versioning.service';
+import { CacheManagerService } from '@/config/redis/cache-manager.service';
 
 @Injectable()
 export class DocumentsService {
@@ -21,6 +22,7 @@ export class DocumentsService {
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
     private versioningService: VersioningService,
+    private readonly cacheManager: CacheManagerService,
   ) {}
 
   // Crear nuevo documento
