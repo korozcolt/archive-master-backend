@@ -1,6 +1,20 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+
+import * as path from 'path';
+
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { join } from 'path';
+import { register } from 'tsconfig-paths';
+
+// Registrar los alias de TypeScript
+const tsConfig = require('./tsconfig.json');
+const baseUrl = path.join(__dirname); // directorio raíz del proyecto
+
+register({
+  baseUrl,
+  paths: tsConfig.compilerOptions.paths,
+});
 
 config(); // Cargar variables de entorno
 

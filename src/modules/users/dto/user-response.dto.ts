@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// src/modules/users/dto/user-response.dto.ts
+
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Transform } from 'class-transformer';
 
@@ -10,8 +13,9 @@ export class UserResponseDto {
   @ApiProperty()
   email: string;
 
-  @Exclude()
-  password: string;
+  // Usar un truco para manejar el password sin incluirlo
+  @Exclude({ toPlainOnly: true })
+  private readonly _password?: string;
 
   @ApiProperty()
   firstName: string;
@@ -44,7 +48,15 @@ export class UserResponseDto {
 
   constructor(data?: Partial<UserResponseDto>) {
     if (data) {
-      Object.assign(this, data);
+      // Excluir explícitamente el password
+      const { _password, ...safeData } = data as any;
+      Object.assign(this, safeData);
     }
+  }
+
+  // Método estático para crear un DTO seguro
+  static create(user: any): UserResponseDto {
+    const { password, ...safeUser } = user;
+    return new UserResponseDto(safeUser);
   }
 }

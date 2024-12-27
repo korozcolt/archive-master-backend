@@ -21,7 +21,7 @@ export class DocumentVersion {
   @Column('text')
   content: string;
 
-  @Column('jsonb', { nullable: true })
+  @Column('json', { nullable: true }) // Cambiado de 'jsonb' a 'json'
   changes: Record<string, any>;
 
   @ManyToOne(() => Document, (document) => document.versions)

@@ -12,6 +12,7 @@ import { TagsModule } from './modules/tags/tags.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { UsersModule } from './modules/users/users.module';
 import { VersioningModule } from './common/versioning/versioning.module';
+import { WorkflowModule } from './modules/workflow/workflow.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { VersioningModule } from './common/versioning/versioning.module';
     ConfigurationsModule,
     RedisModule,
     VersioningModule,
+    WorkflowModule,
   ],
 })
 export class AppModule {}

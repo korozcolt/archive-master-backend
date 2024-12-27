@@ -38,7 +38,7 @@ export class Document {
   })
   type: DocumentType;
 
-  @Column('jsonb', { nullable: true })
+  @Column('json', { nullable: true }) // Cambiado de 'jsonb' a 'json'
   metadata: Record<string, any>;
 
   @OneToMany(() => DocumentVersion, (version) => version.document, {
