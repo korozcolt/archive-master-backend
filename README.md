@@ -185,8 +185,8 @@ Distribuido bajo la Licencia MIT. Consulte `LICENSE` para más información.
 ## 📞 Contacto
 
 - Desarrollador: Kristian Orozco
-- Correo: [ing.korozco@gmail.com]
-- LinkedIn: [https://www.linkedin.com/in/kristian-orozco-backend/]
+- Correo: [ing.korozco@gmail.com](mailto:ing.korozco@gmail.com)
+- LinkedIn: [Kristian Orozco](https://www.linkedin.com/in/kristian-orozco-backend/)
 
 ## 🌟 Agradecimientos
 
