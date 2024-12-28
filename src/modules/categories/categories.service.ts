@@ -8,6 +8,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CacheManagerService } from '@/config/redis/cache-manager.service';
 import { Cacheable, CacheEvict } from '@/common/decorators/cache.decorator';
+import { CACHE_PREFIXES, CACHE_PATTERNS, CACHE_CONFIG } from '@/common/constants/cache.constants';
 
 @Injectable()
 export class CategoriesService {
@@ -17,7 +18,7 @@ export class CategoriesService {
     private readonly cacheManager: CacheManagerService,
   ) {}
 
-  @CacheEvict('categories:*')
+  @CacheEvict(CACHE_PATTERNS.CATEGORIES.ALL)
   async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<Category> {
     const existingCategory = await this.categoryRepository.findOne({
       where: { name: createCategoryDto.name },
@@ -46,8 +47,8 @@ export class CategoriesService {
   }
 
   @Cacheable({
-    prefix: 'categories',
-    ttl: 3600, // 1 hora
+    prefix: CACHE_PREFIXES.CATEGORIES,
+    ttl: CACHE_CONFIG.CATEGORIES.DEFAULT_TTL,
   })
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({
@@ -60,9 +61,9 @@ export class CategoriesService {
   }
 
   @Cacheable({
-    prefix: 'categories',
-    ttl: 3600,
-    keyGenerator: (id: string) => `category:${id}`,
+    prefix: CACHE_PREFIXES.CATEGORIES,
+    ttl: CACHE_CONFIG.CATEGORIES.DEFAULT_TTL,
+    keyGenerator: (id: string) => CACHE_PATTERNS.CATEGORIES.SINGLE(id),
   })
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
@@ -77,7 +78,7 @@ export class CategoriesService {
     return category;
   }
 
-  @CacheEvict('categories:*')
+  @CacheEvict(CACHE_PATTERNS.CATEGORIES.ALL)
   async update(
     id: string,
     updateCategoryDto: UpdateCategoryDto,
@@ -105,7 +106,7 @@ export class CategoriesService {
     return this.categoryRepository.save(category);
   }
 
-  @CacheEvict('categories:*')
+  @CacheEvict(CACHE_PATTERNS.CATEGORIES.ALL)
   async remove(id: string): Promise<void> {
     const category = await this.findOne(id);
 
@@ -117,9 +118,9 @@ export class CategoriesService {
   }
 
   @Cacheable({
-    prefix: 'categories',
-    ttl: 3600,
-    keyGenerator: () => 'tree',
+    prefix: CACHE_PREFIXES.CATEGORIES,
+    ttl: CACHE_CONFIG.CATEGORIES.TREE_TTL,
+    keyGenerator: () => CACHE_PATTERNS.CATEGORIES.TREE,
   })
   async getTree(): Promise<Category[]> {
     const categories = await this.categoryRepository.find({
@@ -142,7 +143,7 @@ export class CategoriesService {
     return result;
   }
 
-  @CacheEvict('categories:*')
+  @CacheEvict(CACHE_PATTERNS.CATEGORIES.ALL)
   async reorder(id: string, newOrder: number, userId: string): Promise<Category> {
     const category = await this.findOne(id);
     category.order = newOrder;
@@ -150,20 +151,11 @@ export class CategoriesService {
     return this.categoryRepository.save(category);
   }
 
-  @CacheEvict('categories:*')
+  @CacheEvict(CACHE_PATTERNS.CATEGORIES.ALL)
   async toggleActive(id: string, userId: string): Promise<Category> {
     const category = await this.findOne(id);
     category.isActive = !category.isActive;
     category.updatedById = userId;
     return this.categoryRepository.save(category);
-  }
-
-  async validateMetadataSchema(schema: Record<string, any>): Promise<boolean> {
-    try {
-      JSON.stringify(schema);
-      return true;
-    } catch {
-      throw new BadRequestException('Invalid metadata schema');
-    }
   }
 }

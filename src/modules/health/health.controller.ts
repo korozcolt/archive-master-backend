@@ -1,14 +1,10 @@
 // src/modules/health/health.controller.ts
+
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Controller, Get } from '@nestjs/common';
-import {
-  HealthCheckService,
-  TypeOrmHealthIndicator,
-  HealthCheck,
-  MemoryHealthIndicator,
-} from '@nestjs/terminus';
-import { InjectConnection } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm'; // Cambiamos Connection por DataSource
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus';
+
+import { CacheHealthIndicator } from '@/common/health/cache.health';
 
 @ApiTags('Health')
 @Controller('health')
@@ -16,8 +12,7 @@ export class HealthController {
   constructor(
     private health: HealthCheckService,
     private db: TypeOrmHealthIndicator,
-    private memory: MemoryHealthIndicator,
-    @InjectConnection() private defaultConnection: DataSource,
+    private cache: CacheHealthIndicator,
   ) {}
 
   @Get()
@@ -26,10 +21,9 @@ export class HealthController {
   check() {
     return this.health.check([
       // Verifica la conexión a la base de datos
-      () =>
-        this.db.pingCheck('database', { connection: this.defaultConnection }),
-      // Verifica el uso de memoria
-      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024), // 150MB
+      () => this.db.pingCheck('database'),
+      // Verifica el estado del caché
+      () => this.cache.check('redis'),
     ]);
   }
 }

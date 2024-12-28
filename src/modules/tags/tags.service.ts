@@ -1,12 +1,16 @@
 // src/modules/tags/tags.service.ts
+
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Tag } from './entities/tag.entity';
 import { TagRelation, RelationType } from './entities/tag-relation.entity';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { CreateTagRelationDto } from './dto/create-tag-relation.dto';
+import { CacheManagerService } from '@/config/redis/cache-manager.service';
+import { Cacheable, CacheEvict } from '@/common/decorators/cache.decorator';
+import { CACHE_PREFIXES, CACHE_PATTERNS, CACHE_CONFIG } from '@/common/constants/cache.constants';
 
 @Injectable()
 export class TagsService {
@@ -15,8 +19,10 @@ export class TagsService {
     private tagRepository: Repository<Tag>,
     @InjectRepository(TagRelation)
     private tagRelationRepository: Repository<TagRelation>,
+    private readonly cacheManager: CacheManagerService,
   ) {}
 
+  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
   async create(createTagDto: CreateTagDto, userId: string): Promise<Tag> {
     const existingTag = await this.tagRepository.findOne({
       where: { name: createTagDto.name },
@@ -44,6 +50,10 @@ export class TagsService {
     return this.tagRepository.save(tag);
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TAGS,
+    ttl: CACHE_CONFIG.TAGS.DEFAULT_TTL,
+  })
   async findAll(): Promise<Tag[]> {
     return this.tagRepository.find({
       relations: ['parent', 'children'],
@@ -53,6 +63,11 @@ export class TagsService {
     });
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TAGS,
+    ttl: CACHE_CONFIG.TAGS.DEFAULT_TTL,
+    keyGenerator: (id: string) => CACHE_PATTERNS.TAGS.SINGLE(id),
+  })
   async findOne(id: string): Promise<Tag> {
     const tag = await this.tagRepository.findOne({
       where: { id },
@@ -73,15 +88,13 @@ export class TagsService {
     return tag;
   }
 
+  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
   async update(id: string, updateTagDto: UpdateTagDto, userId: string): Promise<Tag> {
     const tag = await this.findOne(id);
 
     if (updateTagDto.name) {
       const existingTag = await this.tagRepository.findOne({
-        where: {
-          name: updateTagDto.name,
-          id: Not(id),
-        },
+        where: { name: updateTagDto.name, id: Not(id) },
       });
 
       if (existingTag) {
@@ -89,7 +102,6 @@ export class TagsService {
       }
     }
 
-    // Verificar ciclos en la jerarquía si se está actualizando el padre
     if (updateTagDto.parentId) {
       if (updateTagDto.parentId === id) {
         throw new BadRequestException('A tag cannot be its own parent');
@@ -113,10 +125,10 @@ export class TagsService {
     return this.tagRepository.save(tag);
   }
 
+  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
   async remove(id: string): Promise<void> {
     const tag = await this.findOne(id);
 
-    // Verificar si tiene hijos
     if (tag.children && tag.children.length > 0) {
       throw new BadRequestException('Cannot delete tag with children');
     }
@@ -124,6 +136,11 @@ export class TagsService {
     await this.tagRepository.remove(tag);
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TAGS,
+    ttl: CACHE_CONFIG.TAGS.TREE_TTL,
+    keyGenerator: () => CACHE_PATTERNS.TAGS.TREE,
+  })
   async getTree(): Promise<Tag[]> {
     const tags = await this.tagRepository.find({
       relations: ['children'],
@@ -145,6 +162,7 @@ export class TagsService {
     return result;
   }
 
+  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
   async createRelation(
     createRelationDto: CreateTagRelationDto,
     userId: string,
@@ -155,26 +173,14 @@ export class TagsService {
       throw new BadRequestException('Cannot create relation with the same tag');
     }
 
-    // Verificar que ambos tags existen
     await this.findOne(sourceTagId);
     await this.findOne(relatedTagId);
 
-    // Verificar si ya existe una relación similar
     const existingRelation = await this.tagRelationRepository.findOne({
       where: [
-        {
-          sourceTagId,
-          relatedTagId,
-          relationType,
-        },
+        { sourceTagId, relatedTagId, relationType },
         ...(relationType === RelationType.SYNONYM
-          ? [
-              {
-                sourceTagId: relatedTagId,
-                relatedTagId: sourceTagId,
-                relationType,
-              },
-            ]
+          ? [{ sourceTagId: relatedTagId, relatedTagId: sourceTagId, relationType }]
           : []),
       ],
     });
@@ -192,7 +198,6 @@ export class TagsService {
 
     const savedRelation = await this.tagRelationRepository.save(relation);
 
-    // Si es un sinónimo, crear la relación inversa
     if (relationType === RelationType.SYNONYM) {
       const inverseRelation = this.tagRelationRepository.create({
         sourceTagId: relatedTagId,
@@ -206,32 +211,11 @@ export class TagsService {
     return savedRelation;
   }
 
-  async removeRelation(id: string): Promise<void> {
-    const relation = await this.tagRelationRepository.findOne({
-      where: { id },
-    });
-
-    if (!relation) {
-      throw new NotFoundException(`Tag relation with ID ${id} not found`);
-    }
-
-    // Si es un sinónimo, eliminar también la relación inversa
-    if (relation.relationType === RelationType.SYNONYM) {
-      const inverseRelation = await this.tagRelationRepository.findOne({
-        where: {
-          sourceTagId: relation.relatedTagId,
-          relatedTagId: relation.sourceTagId,
-          relationType: RelationType.SYNONYM,
-        },
-      });
-      if (inverseRelation) {
-        await this.tagRelationRepository.remove(inverseRelation);
-      }
-    }
-
-    await this.tagRelationRepository.remove(relation);
-  }
-
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TAGS,
+    ttl: CACHE_CONFIG.TAGS.RELATED_TTL,
+    keyGenerator: (id: string) => CACHE_PATTERNS.TAGS.RELATED(id),
+  })
   async findRelated(id: string): Promise<{ related: Tag[]; synonyms: Tag[] }> {
     const relations = await this.tagRelationRepository.find({
       where: [{ sourceTagId: id }, { relatedTagId: id }],
@@ -243,7 +227,6 @@ export class TagsService {
 
     for (const relation of relations) {
       const relatedTag = relation.sourceTagId === id ? relation.relatedTag : relation.sourceTag;
-
       if (relation.relationType === RelationType.SYNONYM) {
         synonyms.push(relatedTag);
       } else if (relation.relationType === RelationType.RELATED) {
