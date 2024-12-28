@@ -1,11 +1,7 @@
 # Archive Master 📁
 
 ![Archive Master Logo](https://i.ibb.co/HPRbSNM/archive-master-blanco.png)
-
-![Desarrollo](https://img.shields.io/badge/status-en%20desarrollo-yellow) ![Versión](https://img.shields.io/badge/version-0.1.0-blue)
-![Licencia](https://img.shields.io/badge/license-MIT-green)
-![NestJS](https://img.shields.io/badge/NestJS-v10-E0234E?style=flat&logo=nestjs&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?style=flat&logo=typescript&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-v8-4479A1?style=flat&logo=mysql&logoColor=white)
+![Desarrollo](https://img.shields.io/badge/status-en%20desarrollo-yellow) ![Versión](https://img.shields.io/badge/version-0.1.0-blue) ![Licencia](https://img.shields.io/badge/license-MIT-green) ![NestJS](https://img.shields.io/badge/NestJS-v10-E0234E?style=flat&logo=nestjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?style=flat&logo=typescript&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-v8-4479A1?style=flat&logo=mysql&logoColor=white)
 
 ## 🚀 Descripción del Proyecto
 
@@ -18,7 +14,7 @@ Archive Master es un sistema de gestión documental avanzado, diseñado para opt
 - NestJS
 - TypeORM
 - MySQL
-- Redis
+- Redis (Sistema de Caché)
 - Passport.js (Autenticación)
 - Swagger (Documentación de API)
 
@@ -40,27 +36,86 @@ Archive Master es un sistema de gestión documental avanzado, diseñado para opt
 
 ## 🚧 Estado de los Módulos
 
-### Implementados ✅
+### Core ✅
 
-- [x] Autenticación
-- [x] Usuarios
-- [x] Roles y Permisos
-- [x] Categorías
-- [x] Status y Transiciones
-- [x] Tags
-- [x] Configuraciones
-- [x] Templates
-- [x] Documentos (Base)
-- [x] Workflow Engine (Base)
+- [x] **Configuración Base**
+  - Sistema de Caché con Redis
+  - Gestión de Entorno
+  - Logging y Monitoreo
+  - Manejo de Errores
+
+### Autenticación y Usuarios ✅
+
+- [x] **Sistema de Autenticación**
+  - JWT Integration
+  - Gestión de Sesiones
+  - Rate Limiting
+
+- [x] **Gestión de Usuarios**
+  - CRUD Completo
+  - Perfiles de Usuario
+  - Historial de Actividad
+
+### Gestión de Accesos ✅
+
+- [x] **Roles y Permisos**
+  - Sistema de Roles Jerárquico
+  - Permisos Granulares
+  - Control de Acceso por Módulo
+
+### Organización ✅
+
+- [x] **Categorías**
+  - Estructura Jerárquica
+  - Metadatos Personalizados
+  - Sistema de Caché Optimizado
+
+- [x] **Tags**
+  - Sistema de Etiquetado Flexible
+  - Relaciones Entre Tags
+  - Búsqueda por Tags
+
+### Sistema de Estados ✅
+
+- [x] **Estados y Transiciones**
+  - Flujos Configurables
+  - Validaciones de Transición
+  - Histórico de Cambios
+
+### Configuraciones ✅
+
+- [x] **Sistema de Configuración**
+  - Configuraciones por Grupo
+  - Caché Multinivel
+  - Valores Públicos/Privados
+  - Historial de Cambios
+
+### Plantillas ✅
+
+- [x] **Sistema de Templates**
+  - Plantillas Personalizables
+  - Versionamiento
+  - Validación de Campos
 
 ### En Desarrollo 🚧
 
-- [ ] Búsqueda Avanzada
-- [ ] Sistema de Auditoría
-- [ ] Reportes y Dashboards
-- [ ] Sistema de Notificaciones
-- [ ] OCR y Procesamiento de Documentos
-- [ ] Integraciones Externas
+- [ ] **Motor de Búsqueda**
+  - Indexación de Contenido
+  - Búsqueda Full-Text
+  - Filtros Avanzados
+
+- [ ] **Workflow Engine**
+  - Flujos de Trabajo Personalizables
+  - Asignación de Tareas
+  - Notificaciones
+
+### Pendiente ⏳
+
+- [ ] **Sistema de Auditoría**
+- [ ] **Reportes y Analytics**
+- [ ] **Sistema de Notificaciones**
+- [ ] **OCR y Procesamiento**
+- [ ] **Integraciones Externas**
 
 ## 🔧 Requisitos Previos
 
@@ -72,61 +127,37 @@ Archive Master es un sistema de gestión documental avanzado, diseñado para opt
 ## 📦 Instalación
 
 1. Clonar el repositorio
+
 ```bash
 git clone https://github.com/tu-usuario/archive-master.git
 cd archive-master
 ```
 
 2. Instalar dependencias del backend
+
 ```bash
 cd backend
 npm install
 ```
 
 3. Configurar variables de entorno
+
 - Crear un archivo `.env` basado en `.env.example`
 - Configurar credenciales de base de datos
 - Configurar credenciales de Redis
 - Establecer secretos de JWT
 
 4. Iniciar base de datos
+
 ```bash
 npm run migration:run
 npm run seed
 ```
 
 5. Iniciar servidor de desarrollo
+
 ```bash
 npm run start:dev
-```
-
-## 🔐 Autenticación
-
-El sistema utiliza JWT para autenticación. Los usuarios pueden:
-- Registrarse
-- Iniciar sesión
-- Gestionar perfiles
-- Recuperar contraseña
-
-## 📋 Estructura del Proyecto
-
-```
-archive-master/
-├── backend/
-│   ├── src/
-│   │   ├── modules/
-│   │   │   ├── auth/
-│   │   │   ├── users/
-│   │   │   ├── documents/
-│   │   │   └── ...
-│   │   ├── common/
-│   │   └── config/
-│   ├── migrations/
-│   └── tests/
-└── frontend/
-    ├── components/
-    ├── pages/
-    └── styles/
 ```
 
 ## 🧪 Pruebas

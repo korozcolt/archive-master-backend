@@ -236,4 +236,30 @@ export class TagsService {
 
     return { related, synonyms };
   }
+
+  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
+  async removeRelation(id: string): Promise<void> {
+    const relation = await this.tagRelationRepository.findOne({
+      where: { id },
+    });
+
+    if (!relation) {
+      throw new NotFoundException(`Tag relation with ID ${id} not found`);
+    }
+
+    if (relation.relationType === RelationType.SYNONYM) {
+      const inverseRelation = await this.tagRelationRepository.findOne({
+        where: {
+          sourceTagId: relation.relatedTagId,
+          relatedTagId: relation.sourceTagId,
+          relationType: RelationType.SYNONYM,
+        },
+      });
+      if (inverseRelation) {
+        await this.tagRelationRepository.remove(inverseRelation);
+      }
+    }
+
+    await this.tagRelationRepository.remove(relation);
+  }
 }

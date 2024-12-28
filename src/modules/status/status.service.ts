@@ -190,7 +190,13 @@ export class StatusService {
     );
   }
 
-  private async findOneTransition(id: string): Promise<StatusTransition> {
+  @CacheEvict(CACHE_PATTERNS.STATUS.TRANSITIONS)
+  async removeTransition(id: string): Promise<void> {
+    const transition = await this.findOneTransition(id);
+    await this.transitionRepository.remove(transition);
+  }
+
+  public async findOneTransition(id: string): Promise<StatusTransition> {
     const transition = await this.transitionRepository.findOne({
       where: { id },
       relations: ['fromStatus', 'toStatus', 'requiredRole'],
