@@ -143,7 +143,7 @@ Archive Master es un sistema de gestión documental avanzado, diseñado para opt
 1. Clonar el repositorio
 
 ```bash
-git clone <https://github.com/tu-usuario/archive-master.git>
+git clone <https://github.com/korozcolt/archive-master-backend.git>
 cd archive-master
 ```
 
