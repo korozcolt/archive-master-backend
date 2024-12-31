@@ -141,15 +141,17 @@ Archive Master es un sistema de gestión documental avanzado, diseñado para opt
 ## 📦 Instalación
 
 1. Clonar el repositorio
-\`\`\`bash
+
+```bash
 git clone <https://github.com/tu-usuario/archive-master.git>
 cd archive-master
-\`\`\`
+```
 
 2. Instalar dependencias
-\`\`\`bash
+
+```bash
 npm install
-\`\`\`
+```
 
 3. Configurar variables de entorno
 
@@ -158,19 +160,21 @@ npm install
 - Establecer claves JWT y otros secretos
 
 4. Iniciar base de datos
-\`\`\`bash
+
+```bash
 npm run migration:run
 npm run seed
-\`\`\`
+```
 
 5. Iniciar servidor de desarrollo
-\`\`\`bash
+
+```bash
 npm run start:dev
-\`\`\`
+```
 
 ## 🧪 Testing
 
-\`\`\`bash
+```bash
 
 # Pruebas unitarias
 
@@ -183,7 +187,7 @@ npm run test:e2e
 # Cobertura
 
 npm run test:cov
-\`\`\`
+```
 
 ## 📚 Documentación
 
@@ -195,9 +199,9 @@ La documentación de la API está disponible en:
 ## 🤝 Contribuciones
 
 1. Fork del proyecto
-2. Crear rama de feature (\`git checkout -b feature/AmazingFeature\`)
-3. Commit de cambios (\`git commit -m 'Add some AmazingFeature'\`)
-4. Push a la rama (\`git push origin feature/AmazingFeature\`)
+2. Crear rama de feature (`git checkout -b feature/AmazingFeature`)
+3. Commit de cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Crear Pull Request
 
 ### Guías de Contribución
@@ -209,7 +213,7 @@ La documentación de la API está disponible en:
 
 ## 📄 Licencia
 
-Distribuido bajo la Licencia MIT. Ver \`LICENSE\` para más información.
+Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
 
 ## 📞 Contacto
 
