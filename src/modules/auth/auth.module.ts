@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+import { RedisModule } from '@/config/redis/redis-cache.module';
 import { UsersModule } from '../users/users.module';
 
 @Module({
@@ -25,6 +26,7 @@ import { UsersModule } from '../users/users.module';
       }),
       inject: [ConfigService],
     }),
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],

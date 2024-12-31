@@ -4,6 +4,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude, Transform } from 'class-transformer';
 
+import { DepartmentResponseDto } from '@/modules/companies/dto/department/department-response.dto';
 import { Role } from '../../roles/entities/role.entity';
 
 export class UserResponseDto {
@@ -36,6 +37,9 @@ export class UserResponseDto {
       : null,
   )
   role?: Role;
+
+  @ApiPropertyOptional()
+  department?: DepartmentResponseDto;
 
   @ApiPropertyOptional()
   lastLogin?: Date;

@@ -1,4 +1,5 @@
 // src/modules/users/users.service.ts
+
 import {
   Injectable,
   NotFoundException,
@@ -11,6 +12,9 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role } from '../roles/entities/role.entity';
+import { CacheManagerService } from '@/config/redis/cache-manager.service';
+import { Cacheable, CacheEvict } from '@/common/decorators/cache.decorator';
+import { CACHE_PREFIXES, CACHE_PATTERNS, CACHE_CONFIG } from '@/common/constants/cache.constants';
 
 @Injectable()
 export class UsersService {
@@ -19,8 +23,10 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
     private rolesRepository: Repository<Role>,
+    private readonly cacheManager: CacheManagerService,
   ) {}
 
+  @CacheEvict(CACHE_PATTERNS.USERS.ALL)
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.usersRepository.findOne({
       where: { email: createUserDto.email },
@@ -45,6 +51,10 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.USERS,
+    ttl: CACHE_CONFIG.USERS.DEFAULT_TTL,
+  })
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
       order: {
@@ -53,10 +63,15 @@ export class UsersService {
     });
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.USERS,
+    ttl: CACHE_CONFIG.USERS.DEFAULT_TTL,
+    keyGenerator: (id: string) => CACHE_PATTERNS.USERS.SINGLE(id),
+  })
   async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['role'],
+      relations: ['role', 'department'],
     });
 
     if (!user) {
@@ -66,6 +81,11 @@ export class UsersService {
     return user;
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.USERS,
+    ttl: CACHE_CONFIG.USERS.DEFAULT_TTL,
+    keyGenerator: (email: string) => `user:email:${email}`,
+  })
   async findByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { email },
@@ -79,6 +99,7 @@ export class UsersService {
     return user;
   }
 
+  @CacheEvict([CACHE_PATTERNS.USERS.ALL])
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
 
@@ -107,14 +128,46 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  @CacheEvict([CACHE_PATTERNS.USERS.ALL])
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     await this.usersRepository.remove(user);
   }
 
+  @CacheEvict([CACHE_PATTERNS.USERS.ALL])
   async updateLastLogin(id: string): Promise<void> {
     await this.usersRepository.update(id, {
       lastLogin: new Date(),
     });
+  }
+
+  @Cacheable({
+    prefix: CACHE_PREFIXES.USERS,
+    ttl: CACHE_CONFIG.USERS.ROLES_TTL,
+    keyGenerator: (roleId: string) => CACHE_PATTERNS.USERS.BY_ROLE(roleId),
+  })
+  async findByRole(roleId: string): Promise<User[]> {
+    return this.usersRepository.find({
+      where: { role: { id: roleId } },
+      relations: ['role', 'department'],
+    });
+  }
+
+  @Cacheable({
+    prefix: CACHE_PREFIXES.USERS,
+    ttl: CACHE_CONFIG.USERS.PERMISSIONS_TTL,
+    keyGenerator: (userId: string) => CACHE_PATTERNS.USERS.PERMISSIONS(userId),
+  })
+  async getUserPermissions(userId: string): Promise<string[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['role', 'role.permissions'],
+    });
+
+    if (!user || !user.role) {
+      return [];
+    }
+
+    return user.role.permissions.map((p) => p.name);
   }
 }

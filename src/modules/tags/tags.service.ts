@@ -10,7 +10,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { CreateTagRelationDto } from './dto/create-tag-relation.dto';
 import { CacheManagerService } from '@/config/redis/cache-manager.service';
 import { Cacheable, CacheEvict } from '@/common/decorators/cache.decorator';
-import { CACHE_PREFIXES, CACHE_PATTERNS, CACHE_CONFIG } from '@/common/constants/cache.constants';
+import { CACHE_PREFIXES, CACHE_CONFIG } from '@/common/constants/cache.constants';
 
 @Injectable()
 export class TagsService {
@@ -22,22 +22,22 @@ export class TagsService {
     private readonly cacheManager: CacheManagerService,
   ) {}
 
-  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
+  @CacheEvict(['tags:*', 'tags:tree:*'])
   async create(createTagDto: CreateTagDto, userId: string): Promise<Tag> {
     const existingTag = await this.tagRepository.findOne({
-      where: { name: createTagDto.name },
+      where: [{ name: createTagDto.name }, { slug: this.generateSlug(createTagDto.name) }],
     });
 
     if (existingTag) {
-      throw new BadRequestException('Tag with this name already exists');
+      throw new BadRequestException(
+        `Tag with name "${createTagDto.name}" or similar slug already exists`,
+      );
     }
 
     if (createTagDto.parentId) {
-      const parent = await this.tagRepository.findOne({
-        where: { id: createTagDto.parentId },
-      });
-      if (!parent) {
-        throw new BadRequestException('Parent tag not found');
+      const parent = await this.findOne(createTagDto.parentId);
+      if (!parent.isActive) {
+        throw new BadRequestException('Cannot create tag under inactive parent');
       }
     }
 
@@ -53,20 +53,25 @@ export class TagsService {
   @Cacheable({
     prefix: CACHE_PREFIXES.TAGS,
     ttl: CACHE_CONFIG.TAGS.DEFAULT_TTL,
+    keyGenerator: (filter?: { isActive?: boolean }) => `all:${filter?.isActive ?? 'all'}`,
   })
-  async findAll(): Promise<Tag[]> {
-    return this.tagRepository.find({
-      relations: ['parent', 'children'],
-      order: {
-        name: 'ASC',
-      },
-    });
+  async findAll(filter?: { isActive?: boolean }): Promise<Tag[]> {
+    const queryBuilder = this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoinAndSelect('tag.parent', 'parent')
+      .leftJoinAndSelect('tag.children', 'children');
+
+    if (filter?.isActive !== undefined) {
+      queryBuilder.where('tag.isActive = :isActive', { isActive: filter.isActive });
+    }
+
+    return queryBuilder.orderBy('tag.order', 'ASC').addOrderBy('tag.name', 'ASC').getMany();
   }
 
   @Cacheable({
     prefix: CACHE_PREFIXES.TAGS,
     ttl: CACHE_CONFIG.TAGS.DEFAULT_TTL,
-    keyGenerator: (id: string) => CACHE_PATTERNS.TAGS.SINGLE(id),
+    keyGenerator: (id: string) => `tag:${id}`,
   })
   async findOne(id: string): Promise<Tag> {
     const tag = await this.tagRepository.findOne({
@@ -88,32 +93,62 @@ export class TagsService {
     return tag;
   }
 
-  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TAGS,
+    ttl: CACHE_CONFIG.TAGS.DEFAULT_TTL,
+    keyGenerator: (slug: string) => `slug:${slug}`,
+  })
+  async findBySlug(slug: string): Promise<Tag> {
+    const tag = await this.tagRepository.findOne({
+      where: { slug },
+      relations: ['parent', 'children'],
+    });
+
+    if (!tag) {
+      throw new NotFoundException(`Tag with slug "${slug}" not found`);
+    }
+
+    return tag;
+  }
+
+  @CacheEvict(['tags:*', 'tags:tree:*', `tags:tag:*`])
   async update(id: string, updateTagDto: UpdateTagDto, userId: string): Promise<Tag> {
     const tag = await this.findOne(id);
 
     if (updateTagDto.name) {
+      const slug = this.generateSlug(updateTagDto.name);
       const existingTag = await this.tagRepository.findOne({
-        where: { name: updateTagDto.name, id: Not(id) },
+        where: [
+          { name: updateTagDto.name, id: Not(id) },
+          { slug, id: Not(id) },
+        ],
       });
 
       if (existingTag) {
-        throw new BadRequestException('Tag with this name already exists');
+        throw new BadRequestException(
+          `Tag with name "${updateTagDto.name}" or similar slug already exists`,
+        );
       }
     }
 
-    if (updateTagDto.parentId) {
+    if (updateTagDto.parentId !== undefined) {
       if (updateTagDto.parentId === id) {
         throw new BadRequestException('A tag cannot be its own parent');
       }
 
-      const parent = await this.findOne(updateTagDto.parentId);
-      let currentParent = parent;
-      while (currentParent?.parentId) {
-        if (currentParent.parentId === id) {
-          throw new BadRequestException('Cannot create circular reference in tag hierarchy');
+      if (updateTagDto.parentId) {
+        const parent = await this.findOne(updateTagDto.parentId);
+        if (!parent.isActive) {
+          throw new BadRequestException('Cannot move tag under inactive parent');
         }
-        currentParent = await this.findOne(currentParent.parentId);
+
+        let currentParent = parent;
+        while (currentParent?.parentId) {
+          if (currentParent.parentId === id) {
+            throw new BadRequestException('Cannot create circular reference in tag hierarchy');
+          }
+          currentParent = await this.findOne(currentParent.parentId);
+        }
       }
     }
 
@@ -125,12 +160,20 @@ export class TagsService {
     return this.tagRepository.save(tag);
   }
 
-  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
+  @CacheEvict(['tags:*', 'tags:tree:*', 'tags:related:*'])
   async remove(id: string): Promise<void> {
     const tag = await this.findOne(id);
 
     if (tag.children && tag.children.length > 0) {
       throw new BadRequestException('Cannot delete tag with children');
+    }
+
+    const hasRelations = await this.tagRelationRepository.count({
+      where: [{ sourceTagId: id }, { relatedTagId: id }],
+    });
+
+    if (hasRelations > 0) {
+      throw new BadRequestException('Cannot delete tag with existing relations');
     }
 
     await this.tagRepository.remove(tag);
@@ -139,30 +182,40 @@ export class TagsService {
   @Cacheable({
     prefix: CACHE_PREFIXES.TAGS,
     ttl: CACHE_CONFIG.TAGS.TREE_TTL,
-    keyGenerator: () => CACHE_PATTERNS.TAGS.TREE,
+    keyGenerator: (includeInactive?: boolean) => `tree:${includeInactive ? 'all' : 'active'}`,
   })
-  async getTree(): Promise<Tag[]> {
-    const tags = await this.tagRepository.find({
-      relations: ['children'],
-      where: { parentId: null },
-      order: { name: 'ASC' },
-    });
+  async getTree(includeInactive: boolean = false): Promise<Tag[]> {
+    const queryBuilder = this.tagRepository
+      .createQueryBuilder('tag')
+      .leftJoinAndSelect('tag.children', 'children')
+      .where('tag.parentId IS NULL')
+      .orderBy('tag.order', 'ASC')
+      .addOrderBy('tag.name', 'ASC');
 
-    return this.buildTree(tags);
+    if (!includeInactive) {
+      queryBuilder.andWhere('tag.isActive = :isActive', { isActive: true });
+    }
+
+    const tags = await queryBuilder.getMany();
+    return this.buildTree(tags, includeInactive);
   }
 
-  private async buildTree(tags: Tag[]): Promise<Tag[]> {
+  private async buildTree(tags: Tag[], includeInactive: boolean): Promise<Tag[]> {
     const result = [];
     for (const tag of tags) {
+      if (!includeInactive && !tag.isActive) {
+        continue;
+      }
+
       if (tag.children) {
-        tag.children = await this.buildTree(tag.children);
+        tag.children = await this.buildTree(tag.children, includeInactive);
       }
       result.push(tag);
     }
     return result;
   }
 
-  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
+  @CacheEvict(['tags:*', 'tags:related:*'])
   async createRelation(
     createRelationDto: CreateTagRelationDto,
     userId: string,
@@ -173,8 +226,12 @@ export class TagsService {
       throw new BadRequestException('Cannot create relation with the same tag');
     }
 
-    await this.findOne(sourceTagId);
-    await this.findOne(relatedTagId);
+    const sourceTag = await this.findOne(sourceTagId);
+    const relatedTag = await this.findOne(relatedTagId);
+
+    if (!sourceTag.isActive || !relatedTag.isActive) {
+      throw new BadRequestException('Cannot create relations with inactive tags');
+    }
 
     const existingRelation = await this.tagRelationRepository.findOne({
       where: [
@@ -214,13 +271,26 @@ export class TagsService {
   @Cacheable({
     prefix: CACHE_PREFIXES.TAGS,
     ttl: CACHE_CONFIG.TAGS.RELATED_TTL,
-    keyGenerator: (id: string) => CACHE_PATTERNS.TAGS.RELATED(id),
+    keyGenerator: (id: string, includeInactive?: boolean) =>
+      `related:${id}:${includeInactive ? 'all' : 'active'}`,
   })
-  async findRelated(id: string): Promise<{ related: Tag[]; synonyms: Tag[] }> {
-    const relations = await this.tagRelationRepository.find({
-      where: [{ sourceTagId: id }, { relatedTagId: id }],
-      relations: ['sourceTag', 'relatedTag'],
-    });
+  async findRelated(
+    id: string,
+    includeInactive: boolean = false,
+  ): Promise<{ related: Tag[]; synonyms: Tag[] }> {
+    const queryBuilder = this.tagRelationRepository
+      .createQueryBuilder('relation')
+      .leftJoinAndSelect('relation.sourceTag', 'sourceTag')
+      .leftJoinAndSelect('relation.relatedTag', 'relatedTag')
+      .where([{ sourceTagId: id }, { relatedTagId: id }]);
+
+    if (!includeInactive) {
+      queryBuilder
+        .andWhere('sourceTag.isActive = :isActive', { isActive: true })
+        .andWhere('relatedTag.isActive = :isActive', { isActive: true });
+    }
+
+    const relations = await queryBuilder.getMany();
 
     const related = [];
     const synonyms = [];
@@ -237,7 +307,7 @@ export class TagsService {
     return { related, synonyms };
   }
 
-  @CacheEvict(CACHE_PATTERNS.TAGS.ALL)
+  @CacheEvict(['tags:related:*'])
   async removeRelation(id: string): Promise<void> {
     const relation = await this.tagRelationRepository.findOne({
       where: { id },
@@ -261,5 +331,12 @@ export class TagsService {
     }
 
     await this.tagRelationRepository.remove(relation);
+  }
+
+  private generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
   }
 }

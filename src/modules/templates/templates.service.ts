@@ -7,6 +7,9 @@ import { TemplateVersion } from './entities/template-version.entity';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { CreateTemplateVersionDto } from './dto/create-template-version.dto';
+import { CACHE_CONFIG, CACHE_PATTERNS, CACHE_PREFIXES } from '@/common/constants/cache.constants';
+import { Cacheable, CacheEvict } from '@/common/decorators/cache.decorator';
+import { CacheManagerService } from '@/config/redis/cache-manager.service';
 
 @Injectable()
 export class TemplatesService {
@@ -15,8 +18,10 @@ export class TemplatesService {
     private templateRepository: Repository<Template>,
     @InjectRepository(TemplateVersion)
     private templateVersionRepository: Repository<TemplateVersion>,
+    private readonly cacheManager: CacheManagerService,
   ) {}
 
+  @CacheEvict(CACHE_PATTERNS.TEMPLATES.ALL)
   async create(createTemplateDto: CreateTemplateDto, userId: string): Promise<Template> {
     // Verificar si ya existe un template con el mismo código o nombre
     const existingTemplate = await this.templateRepository.findOne({
@@ -52,6 +57,10 @@ export class TemplatesService {
     return savedTemplate;
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TEMPLATES,
+    ttl: CACHE_CONFIG.TEMPLATES.DEFAULT_TTL,
+  })
   async findAll(): Promise<Template[]> {
     return this.templateRepository.find({
       relations: ['category', 'initialStatus'],
@@ -61,6 +70,11 @@ export class TemplatesService {
     });
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TEMPLATES,
+    ttl: CACHE_CONFIG.TEMPLATES.DEFAULT_TTL,
+    keyGenerator: (id: string) => CACHE_PATTERNS.TEMPLATES.SINGLE(id),
+  })
   async findOne(id: string): Promise<Template> {
     const template = await this.templateRepository.findOne({
       where: { id },
@@ -74,6 +88,7 @@ export class TemplatesService {
     return template;
   }
 
+  @CacheEvict(CACHE_PATTERNS.TEMPLATES.ALL)
   async update(
     id: string,
     updateTemplateDto: UpdateTemplateDto,
@@ -134,17 +149,19 @@ export class TemplatesService {
     return this.templateRepository.save(template);
   }
 
+  @CacheEvict(CACHE_PATTERNS.TEMPLATES.ALL)
   async remove(id: string): Promise<void> {
     const template = await this.findOne(id);
     await this.templateRepository.remove(template);
   }
 
+  @CacheEvict(CACHE_PATTERNS.TEMPLATES.ALL)
   async createVersion(
-    id: string,
+    templateId: string,
     createVersionDto: CreateTemplateVersionDto,
     userId: string,
   ): Promise<TemplateVersion> {
-    const template = await this.findOne(id);
+    const template = await this.findOne(templateId);
 
     // Incrementar la versión del template
     template.version += 1;
@@ -161,6 +178,11 @@ export class TemplatesService {
     return this.templateVersionRepository.save(version);
   }
 
+  @Cacheable({
+    prefix: CACHE_PREFIXES.TEMPLATES,
+    ttl: CACHE_CONFIG.TEMPLATES.VERSIONS_TTL,
+    keyGenerator: (templateId: string) => CACHE_PATTERNS.TEMPLATES.VERSIONS(templateId),
+  })
   async findVersions(id: string): Promise<TemplateVersion[]> {
     const versions = await this.templateVersionRepository.find({
       where: { templateId: id },

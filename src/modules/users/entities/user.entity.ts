@@ -15,6 +15,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { Department } from '@/modules/companies/entities/department.entity';
 import { Exclude } from 'class-transformer';
 import { Role } from '../../roles/entities/role.entity';
 
@@ -42,6 +43,13 @@ export class User extends BaseEntity {
   @ManyToOne(() => Role, { eager: true })
   @JoinColumn({ name: 'role_id' })
   role!: Role;
+
+  @Column({ name: 'department_id', nullable: true })
+  departmentId: string;
+
+  @ManyToOne(() => Department, (department) => department.users)
+  @JoinColumn({ name: 'department_id' })
+  department: Department;
 
   @Column('timestamp', { name: 'last_login', nullable: true })
   lastLogin!: Date | null;

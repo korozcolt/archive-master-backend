@@ -25,18 +25,39 @@ export function Cacheable(options: CacheOptions = {}) {
         return originalMethod.apply(this, args);
       }
 
-      const cacheKey = options.keyGenerator
-        ? options.keyGenerator(...args)
-        : `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`;
+      try {
+        const cacheKey = options.keyGenerator
+          ? options.keyGenerator(...args)
+          : `${target.constructor.name}:${propertyKey}:${JSON.stringify(args)}`;
 
-      return this.cacheManager.getOrSet(cacheKey, () => originalMethod.apply(this, args), options);
+        const cachedValue = await this.cacheManager.get(cacheKey, {
+          prefix: options.prefix,
+        });
+
+        if (cachedValue !== null) {
+          logger.debug(`Cache hit for key: ${cacheKey}`);
+          return cachedValue;
+        }
+
+        const result = await originalMethod.apply(this, args);
+
+        await this.cacheManager.set(cacheKey, result, {
+          ttl: options.ttl,
+          prefix: options.prefix,
+        });
+
+        return result;
+      } catch (error) {
+        logger.error(`Cache error in ${target.constructor.name}:`, error);
+        return originalMethod.apply(this, args);
+      }
     };
 
     return descriptor;
   };
 }
 
-export function CacheEvict(pattern: string) {
+export function CacheEvict(patterns: string | string[]) {
   const logger = new Logger('CacheEvict');
 
   return function (target: object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -50,7 +71,14 @@ export function CacheEvict(pattern: string) {
 
       try {
         const result = await originalMethod.apply(this, args);
-        await this.cacheManager.invalidatePattern(pattern);
+
+        // Manejar múltiples patrones
+        const patternsToInvalidate = Array.isArray(patterns) ? patterns : [patterns];
+        for (const pattern of patternsToInvalidate) {
+          await this.cacheManager.invalidatePattern(pattern);
+          logger.debug(`Cache invalidated for pattern: ${pattern}`);
+        }
+
         return result;
       } catch (error) {
         logger.error(`Cache eviction error in ${target.constructor.name}:`, error);

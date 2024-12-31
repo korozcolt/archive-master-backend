@@ -1,5 +1,6 @@
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 import { ConfigModule } from './config/config.module';
 import { ConfigurationsModule } from './modules/configurations/configurations.module';
 import { DatabaseModule } from './config/database/database.module';
@@ -20,6 +21,7 @@ import { WorkflowModule } from './modules/workflow/workflow.module';
     DatabaseModule,
     AuthModule,
     HealthModule,
+    CompaniesModule,
     UsersModule,
     RolesModule,
     CategoriesModule,
