@@ -18,6 +18,7 @@ import * as path from 'path';
 import { Readable } from 'stream';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { FindDocumentsDto } from '../dto/find-documents.dto';
+import { PaginatedResponse } from '@/common/interfaces/pagination.interface';
 
 interface FileUploadResult {
   path: string;
@@ -45,6 +46,12 @@ export class DocumentsService {
     this.config = {
       type: configService.get('STORAGE_TYPE', 'local'),
       localPath: configService.get('STORAGE_LOCAL_PATH', './uploads'),
+      s3: {
+        accessKeyId: configService.get('AWS_ACCESS_KEY_ID'),
+        secretAccessKey: configService.get('AWS_SECRET_ACCESS_KEY'),
+        bucket: configService.get('AWS_BUCKET'),
+        region: configService.get('AWS_REGION'),
+      },
     };
 
     if (this.config.type === 's3') {
@@ -177,28 +184,26 @@ export class DocumentsService {
     return document;
   }
 
-  async findAll(filters: FindDocumentsDto): Promise<Document[]> {
+  async findAll(filters: FindDocumentsDto): Promise<PaginatedResponse<Document>> {
     const queryBuilder = this.documentRepository
       .createQueryBuilder('document')
       .leftJoinAndSelect('document.category', 'category')
       .leftJoinAndSelect('document.createdBy', 'createdBy')
       .leftJoinAndSelect('document.versions', 'versions');
 
+    // Búsqueda
     if (filters.search) {
       queryBuilder.andWhere(
         new Brackets((qb) => {
-          qb.where(
-            'MATCH(document.title, document.description) AGAINST (:search IN BOOLEAN MODE)',
-            { search: filters.search },
-          )
-            .orWhere('document.title LIKE :searchLike', { searchLike: `%${filters.search}%` })
-            .orWhere('document.description LIKE :searchLike', {
-              searchLike: `%${filters.search}%`,
-            });
+          qb.where('document.title LIKE :search', { search: `%${filters.search}%` }).orWhere(
+            'document.description LIKE :search',
+            { search: `%${filters.search}%` },
+          );
         }),
       );
     }
 
+    // Filtros
     if (filters.type) {
       queryBuilder.andWhere('document.type = :type', { type: filters.type });
     }
@@ -217,6 +222,7 @@ export class DocumentsService {
       queryBuilder.andWhere('document.createdAt <= :endDate', { endDate: filters.endDate });
     }
 
+    // Metadatos
     if (filters.metadata) {
       Object.entries(filters.metadata).forEach(([key, value]) => {
         queryBuilder.andWhere(`JSON_EXTRACT(document.metadata, '$.${key}') = :value${key}`, {
@@ -225,7 +231,29 @@ export class DocumentsService {
       });
     }
 
-    return await queryBuilder.orderBy('document.updatedAt', 'DESC').cache(true).getMany();
+    // Ordenamiento
+    const allowedSortFields = ['createdAt', 'title', 'type', 'updatedAt'];
+    const orderBy = allowedSortFields.includes(filters.orderBy) ? filters.orderBy : 'createdAt';
+    const orderDirection = filters.orderDirection || 'DESC';
+    queryBuilder.orderBy(`document.${orderBy}`, orderDirection);
+
+    // Paginación
+    const page = filters.page || 1;
+    const limit = filters.limit || 10;
+    const skip = (page - 1) * limit;
+
+    // Ejecutar consulta
+    const [data, total] = await queryBuilder.skip(skip).take(limit).getManyAndCount();
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+        limit,
+      },
+    };
   }
 
   async findVersion(documentId: string, versionNumber: number): Promise<DocumentVersion> {
@@ -328,16 +356,24 @@ export class DocumentsService {
   }
 
   async getFileStream(filePath: string): Promise<Readable> {
-    if (this.config.type === 's3') {
-      const command = new GetObjectCommand({
-        Bucket: this.config.s3.bucket,
-        Key: filePath,
-      });
-      const response = await this.s3Client.send(command);
-      return response.Body as Readable;
-    } else {
-      const fullPath = path.join(this.config.localPath, filePath);
-      return fs.createReadStream(fullPath);
+    try {
+      if (this.config.type === 's3') {
+        const command = new GetObjectCommand({
+          Bucket: this.config.s3?.bucket,
+          Key: filePath,
+        });
+        const response = await this.s3Client.send(command);
+        return response.Body as Readable;
+      } else {
+        const fullPath = path.join(this.config.localPath, filePath);
+        if (!fs.existsSync(fullPath)) {
+          throw new NotFoundException('File not found');
+        }
+        return fs.createReadStream(fullPath);
+      }
+    } catch (error) {
+      this.logger.error(`Error getting file stream: ${error}`);
+      throw new NotFoundException('File not found or inaccessible');
     }
   }
 }

@@ -1,192 +1,221 @@
 # Archive Master 📁
 
 ![Archive Master Logo](https://i.ibb.co/HPRbSNM/archive-master-blanco.png)
-![Desarrollo](https://img.shields.io/badge/status-en%20desarrollo-yellow) ![Versión](https://img.shields.io/badge/version-0.1.0-blue) ![Licencia](https://img.shields.io/badge/license-MIT-green) ![NestJS](https://img.shields.io/badge/NestJS-v10-E0234E?style=flat&logo=nestjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?style=flat&logo=typescript&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-v8-4479A1?style=flat&logo=mysql&logoColor=white)
+
+![Desarrollo](https://img.shields.io/badge/status-en%20desarrollo-yellow)
+![Versión](https://img.shields.io/badge/version-0.2.0-blue)
+![Licencia](https://img.shields.io/badge/license-MIT-green)
+![NestJS](https://img.shields.io/badge/NestJS-v10-E0234E?style=flat&logo=nestjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?style=flat&logo=typescript&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-v8-4479A1?style=flat&logo=mysql&logoColor=white)
 
 ## 🚀 Descripción del Proyecto
 
-Archive Master es un sistema de gestión documental avanzado, diseñado para optimizar el almacenamiento, organización y flujo de trabajo de documentos en entornos empresariales. Desarrollado con tecnologías de vanguardia, ofrece una solución integral para la administración eficiente de documentos.
+Archive Master es un sistema de gestión documental avanzado, diseñado para optimizar el almacenamiento, organización y flujo de trabajo de documentos en entornos empresariales. Con enfoque en estándares colombianos pero adaptable a nivel mundial, ofrece una solución robusta y escalable para la administración eficiente de documentos.
 
 ## 🛠️ Tecnologías Principales
 
 ### Backend
 
-- NestJS
+- NestJS v10
 - TypeORM
-- MySQL
+- MySQL 8
 - Redis (Sistema de Caché)
-- Passport.js (Autenticación)
 - Swagger (Documentación de API)
+- Jest (Testing)
 
-### Frontend
+### Frontend (En desarrollo)
 
 - Next.js
 - React
 - Tailwind CSS
+- Filament Admin Panel
 
-## ✨ Características Principales
+## ⚡ Características Principales
 
 - 📄 Gestión completa de documentos
 - 🔒 Sistema de autenticación y autorización robusto
 - 📊 Flujos de trabajo personalizables
-- 🔍 Motor de búsqueda avanzado
+- 🔍 Motor de búsqueda avanzado (En desarrollo)
 - 📈 Versionado de documentos
 - 🏷️ Sistema de categorías y etiquetas
 - 📝 Gestión de permisos granular
+- 📨 Sistema de notificaciones (En desarrollo)
 
-## 🚧 Estado de los Módulos
+## 📋 Estado del Proyecto
 
-### Core ✅
+### Módulos Implementados ✅
 
-- [x] **Configuración Base**
-  - Sistema de Caché con Redis
-  - Gestión de Entorno
-  - Logging y Monitoreo
-  - Manejo de Errores
+#### Core
 
-### Autenticación y Usuarios ✅
+- [x] Sistema Base
+  - Configuración y estructura del proyecto
+  - Manejo de errores y logging
+  - Sistema de caché con Redis
+  - Documentación con Swagger
 
-- [x] **Sistema de Autenticación**
+#### Autenticación y Usuarios
+
+- [x] Sistema de Autenticación
   - JWT Integration
   - Gestión de Sesiones
   - Rate Limiting
 
-- [x] **Gestión de Usuarios**
-  - CRUD Completo
-  - Perfiles de Usuario
-  - Historial de Actividad
+#### Organización
 
-### Gestión de Accesos ✅
+- [x] Gestión Empresarial
+  - Estructura organizacional
+  - Compañías
+  - Sucursales
+  - Departamentos
 
-- [x] **Roles y Permisos**
-  - Sistema de Roles Jerárquico
-  - Permisos Granulares
-  - Control de Acceso por Módulo
+#### Gestión Documental
 
-### Organización ✅
-
-- [x] **Categorías**
-  - Estructura Jerárquica
-  - Metadatos Personalizados
-  - Sistema de Caché Optimizado
-
-- [x] **Tags**
-  - Sistema de Etiquetado Flexible
-  - Relaciones Entre Tags
-  - Búsqueda por Tags
-
-### Sistema de Estados ✅
-
-- [x] **Estados y Transiciones**
-  - Flujos Configurables
-  - Validaciones de Transición
-  - Histórico de Cambios
-
-### Configuraciones ✅
-
-- [x] **Sistema de Configuración**
-  - Configuraciones por Grupo
-  - Caché Multinivel
-  - Valores Públicos/Privados
-  - Historial de Cambios
-
-### Plantillas ✅
-
-- [x] **Sistema de Templates**
-  - Plantillas Personalizables
+- [x] Documentos
+  - CRUD básico
   - Versionamiento
-  - Validación de Campos
+  - Categorización
+  - Etiquetado
 
-### En Desarrollo 🚧
+#### Workflows
 
-- [ ] **Motor de Búsqueda**
-  - Indexación de Contenido
-  - Búsqueda Full-Text
-  - Filtros Avanzados
+- [x] Motor de Flujos de Trabajo
+  - Definición de flujos
+  - Estados y transiciones
+  - Asignación de tareas
+  - Notificaciones básicas
 
-- [ ] **Workflow Engine**
-  - Flujos de Trabajo Personalizables
-  - Asignación de Tareas
-  - Notificaciones
+### Módulos en Desarrollo 🚧
 
-### Pendiente ⏳
+#### Motor de Búsqueda
 
-- [ ] **Sistema de Auditoría**
-- [ ] **Reportes y Analytics**
-- [ ] **Sistema de Notificaciones**
-- [ ] **OCR y Procesamiento**
-- [ ] **Integraciones Externas**
+- [ ] Indexación de contenido
+- [ ] Búsqueda Full-Text
+- [ ] Filtros avanzados
+- [ ] Sistema de relevancia
+
+#### Sistema de Notificaciones
+
+- [ ] Notificaciones en tiempo real
+- [ ] Múltiples canales (email, in-app)
+- [ ] Plantillas personalizables
+- [ ] Preferencias de usuario
+
+### Módulos Pendientes ⏳
+
+#### OCR y Procesamiento
+
+- [ ] Reconocimiento de texto
+- [ ] Procesamiento de documentos escaneados
+- [ ] Extracción automática de metadatos
+
+#### Reportes y Analytics
+
+- [ ] Dashboards personalizables
+- [ ] Métricas y KPIs
+- [ ] Exportación multiformato
+
+#### Integraciones
+
+- [ ] APIs para terceros
+- [ ] Webhooks
+- [ ] Storage providers
+- [ ] Servicios externos
+
+## 🎯 Próximos Pasos
+
+1. Completar implementación del motor de búsqueda
+2. Desarrollar sistema de notificaciones avanzado
+3. Implementar OCR y procesamiento de documentos
+4. Mejorar cobertura de pruebas
+5. Optimizar rendimiento y escalabilidad
+6. Desarrollar módulo de reportes y analytics
 
 ## 🔧 Requisitos Previos
 
 - Node.js (v18+)
 - npm (v9+)
-- MySQL
+- MySQL (v8+)
 - Redis
 
 ## 📦 Instalación
 
 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/tu-usuario/archive-master.git
+\`\`\`bash
+git clone <https://github.com/tu-usuario/archive-master.git>
 cd archive-master
-```
+\`\`\`
 
-2. Instalar dependencias del backend
-
-```bash
-cd backend
+2. Instalar dependencias
+\`\`\`bash
 npm install
-```
+\`\`\`
 
 3. Configurar variables de entorno
 
-- Crear un archivo `.env` basado en `.env.example`
-- Configurar credenciales de base de datos
-- Configurar credenciales de Redis
-- Establecer secretos de JWT
+- Crear archivo .env basado en .env.example
+- Configurar credenciales de base de datos y Redis
+- Establecer claves JWT y otros secretos
 
 4. Iniciar base de datos
-
-```bash
+\`\`\`bash
 npm run migration:run
 npm run seed
-```
+\`\`\`
 
 5. Iniciar servidor de desarrollo
-
-```bash
+\`\`\`bash
 npm run start:dev
-```
+\`\`\`
 
-## 🧪 Pruebas
+## 🧪 Testing
 
-```bash
-# Ejecutar pruebas unitarias
+\`\`\`bash
+
+# Pruebas unitarias
+
 npm run test
 
-# Ejecutar pruebas end-to-end
+# Pruebas e2e
+
 npm run test:e2e
-```
+
+# Cobertura
+
+npm run test:cov
+\`\`\`
+
+## 📚 Documentación
+
+La documentación de la API está disponible en:
+
+- Desarrollo: <http://localhost:3000/api/docs>
+- Producción: <https://tu-dominio.com/api/docs>
 
 ## 🤝 Contribuciones
 
-1. Haz un fork del proyecto
-2. Crea tu rama de características (`git checkout -b feature/AmazingFeature`)
-3. Commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork del proyecto
+2. Crear rama de feature (\`git checkout -b feature/AmazingFeature\`)
+3. Commit de cambios (\`git commit -m 'Add some AmazingFeature'\`)
+4. Push a la rama (\`git push origin feature/AmazingFeature\`)
+5. Crear Pull Request
+
+### Guías de Contribución
+
+- Seguir estándares de código establecidos
+- Incluir pruebas para nueva funcionalidad
+- Actualizar documentación según sea necesario
+- Seguir convenciones de commits
 
 ## 📄 Licencia
 
-Distribuido bajo la Licencia MIT. Consulte `LICENSE` para más información.
+Distribuido bajo la Licencia MIT. Ver \`LICENSE\` para más información.
 
 ## 📞 Contacto
 
-- Desarrollador: Kristian Orozco
-- Correo: [ing.korozco@gmail.com](mailto:ing.korozco@gmail.com)
-- LinkedIn: [Kristian Orozco](https://www.linkedin.com/in/kristian-orozco-backend/)
+Desarrollador: Kristian Orozco
+Email: [ing.korozco@gmail.com](mailto:ing.korozco@gmail.com)
+LinkedIn: [Kristian Orozco](https://www.linkedin.com/in/kristian-orozco-backend/)
 
 ## 🌟 Agradecimientos
 

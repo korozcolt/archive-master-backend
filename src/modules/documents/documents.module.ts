@@ -6,6 +6,7 @@ import { DocumentVersion } from './entities/document-version.entity';
 import { DocumentsController } from './controllers/documents.controller';
 import { DocumentsService } from './services/documents.service';
 import { Module } from '@nestjs/common';
+import { StorageModule } from '@/config/storage/storage.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
@@ -17,6 +18,7 @@ import { VersioningModule } from '@/common/versioning/versioning.module';
     UsersModule,
     CategoriesModule,
     VersioningModule,
+    StorageModule,
   ],
   controllers: [DocumentsController],
   providers: [DocumentsService, DocumentRepository],
