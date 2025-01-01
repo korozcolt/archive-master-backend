@@ -8,6 +8,7 @@ import { HealthModule } from './modules/health/health.module';
 import { Module } from '@nestjs/common';
 import { RedisModule } from './config/redis/redis-cache.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { SearchModule } from './modules/search/search.module';
 import { StatusModule } from './modules/status/status.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { TemplatesModule } from './modules/templates/templates.module';
@@ -32,6 +33,7 @@ import { WorkflowModule } from './modules/workflow/workflow.module';
     RedisModule,
     VersioningModule,
     WorkflowModule,
+    SearchModule,
   ],
 })
 export class AppModule {}
