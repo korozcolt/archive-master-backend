@@ -31,17 +31,17 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Configuración de Swagger
-  if (process.env.NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Archive Master API')
-      .setDescription('Document Management System API')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
+  //if (process.env.NODE_ENV !== 'production') {
+  const config = new DocumentBuilder()
+    .setTitle('Archive Master API')
+    .setDescription('Document Management System API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
-  }
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+  //}
 
   // Iniciar el servidor
   const port = process.env.PORT || 3000;
