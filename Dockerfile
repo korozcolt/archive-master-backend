@@ -1,5 +1,7 @@
 FROM node:20-alpine AS builder
 
+RUN npm install -g npm@11.0.0
+
 WORKDIR /usr/src/app
 
 # Instalar dependencias necesarias
@@ -21,6 +23,8 @@ RUN npm run build
 
 # Etapa de producción
 FROM node:20-alpine
+
+RUN npm install -g npm@11.0.0
 
 WORKDIR /usr/src/app
 
