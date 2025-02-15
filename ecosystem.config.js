@@ -11,9 +11,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
       },
-      // Cambiamos la ubicación de los logs al directorio /tmp que es escribible
-      error_file: '/tmp/error.log',
-      out_file: '/tmp/output.log',
+      error_file: '/usr/src/app/logs/error.log',
+      out_file: '/usr/src/app/logs/output.log',
       merge_logs: true,
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       max_restarts: 10,
