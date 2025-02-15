@@ -41,13 +41,12 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 # Copiar archivo de configuración de PM2
 COPY ecosystem.config.js ./
 
-# Crear directorio para uploads
-RUN mkdir -p storage/uploads
+# Crear directorios necesarios con permisos correctos
+RUN mkdir -p storage/uploads /tmp/logs && \
+    chown -R node:node /usr/src/app /tmp/logs
 
-# Usar www-data que ya existe en la imagen
-RUN chown -R www-data:www-data /usr/src/app
-
-USER www-data
+# Usar el usuario node que viene por defecto
+USER node
 
 EXPOSE 3000
 
