@@ -3,13 +3,14 @@ module.exports = {
     {
       name: 'archive-master-api',
       script: './dist/src/main.js',
-      instances: 'max',
-      exec_mode: 'cluster',
+      instances: 1, // Cambiado a 1 para debugging
+      exec_mode: 'fork', // Cambiado a fork para debugging
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
+        PORT: 3000,
       },
       error_file: '/usr/src/app/logs/error.log',
       out_file: '/usr/src/app/logs/output.log',
@@ -20,6 +21,9 @@ module.exports = {
       wait_ready: true,
       kill_timeout: 3000,
       listen_timeout: 12000,
+      // Añadir estas opciones para mejor debugging
+      trace: true,
+      no_daemon: true,
     },
   ],
 };

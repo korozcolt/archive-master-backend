@@ -50,5 +50,5 @@ USER node
 
 EXPOSE 3000
 
-# Usar PM2 para ejecutar la aplicación
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+# Usar PM2 para ejecutar la aplicación con logs
+CMD ["sh", "-c", "pm2-runtime start ecosystem.config.js --env production | tee -a /usr/src/app/logs/pm2.log"]
