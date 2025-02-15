@@ -7,6 +7,12 @@ BACKUP_DIR="/var/backups/archive-master"
 LOG_DIR="$DEPLOY_DIR/logs"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
+# Asegurar que el script se ejecuta con sudo
+if [[ $EUID -ne 0 ]]; then
+   echo "Este script debe ejecutarse con sudo"
+   exit 1
+fi
+
 # Función de logging
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_DIR/deploy.log"
@@ -15,10 +21,18 @@ log() {
 # Crear directorios necesarios
 setup_directories() {
     log "Configurando directorios..."
+    
+    # Crear directorios con los permisos correctos
     mkdir -p $BACKUP_DIR
     mkdir -p $LOG_DIR
-    chmod -R 755 $LOG_DIR
+    
+    # Asignar permisos y propietario
     chown -R www-data:www-data $LOG_DIR
+    chmod -R 755 $LOG_DIR
+    
+    # Asegurar que el directorio de backups sea accesible
+    chown -R www-data:www-data $BACKUP_DIR
+    chmod -R 755 $BACKUP_DIR
 }
 
 # Función de verificación de salud
@@ -48,6 +62,9 @@ backup_database() {
     docker exec archive_master_db mysqldump -u archivemaster -p'YAXcB61Kcx16A7FBn34k' archive_master > "$BACKUP_DIR/backup_$TIMESTAMP.sql"
     if [ $? -eq 0 ]; then
         log "Backup completado exitosamente"
+        # Asegurar que el archivo de backup tenga los permisos correctos
+        chown www-data:www-data "$BACKUP_DIR/backup_$TIMESTAMP.sql"
+        chmod 644 "$BACKUP_DIR/backup_$TIMESTAMP.sql"
     else
         log "Error en el backup de base de datos"
         exit 1
@@ -105,11 +122,10 @@ cleanup() {
     find $LOG_DIR -name "*.log" -mtime +30 -exec rm {} \;
 }
 
-# Función de notificación (puedes implementar con tu sistema de notificaciones preferido)
+# Función de notificación
 notify() {
     local status=$1
     local message=$2
-    # Implementar sistema de notificaciones (ejemplo: Slack, Email, etc.)
     echo "[NOTIFICATION] $status: $message" >> "$LOG_DIR/notifications.log"
 }
 
