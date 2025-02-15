@@ -18,7 +18,7 @@ setup_directories() {
     mkdir -p $BACKUP_DIR
     mkdir -p $LOG_DIR
     chmod -R 755 $LOG_DIR
-    chown -R nestjs:nodejs $LOG_DIR
+    chown -R www-data:www-data $LOG_DIR
 }
 
 # Función de verificación de salud

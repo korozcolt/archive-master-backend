@@ -44,12 +44,10 @@ COPY ecosystem.config.js ./
 # Crear directorio para uploads
 RUN mkdir -p storage/uploads
 
-# Crear usuario no root
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001 && \
-    chown -R nestjs:nodejs /usr/src/app
+# Usar www-data que ya existe en la imagen
+RUN chown -R www-data:www-data /usr/src/app
 
-USER nestjs
+USER www-data
 
 EXPOSE 3000
 
