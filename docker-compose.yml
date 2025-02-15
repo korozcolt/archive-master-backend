@@ -21,6 +21,7 @@ services:
       - '127.0.0.1:3000:3000'
     volumes:
       - ./storage/uploads:/usr/src/app/storage/uploads
+      - ./logs:/usr/src/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -29,11 +30,15 @@ services:
     networks:
       - archive_master_network
     healthcheck:
-      test:
-        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     logging:
       driver: "json-file"
       options:

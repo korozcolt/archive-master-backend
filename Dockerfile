@@ -25,19 +25,21 @@ RUN npm run build
 FROM node:20-alpine
 
 RUN npm install -g npm@11.0.0
+RUN npm install -g pm2
 
 WORKDIR /usr/src/app
 
-# Copiar archivos necesarios para las migraciones
+# Copiar archivos necesarios
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app/tsconfig*.json ./
 COPY --from=builder /usr/src/app/typeorm.config.ts ./
 COPY --from=builder /usr/src/app/src/database/migrations ./src/database/migrations
 COPY --from=builder /usr/src/app/src/database/seeds ./src/database/seeds
-
-# Copiar dependencias y archivos compilados
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
+
+# Copiar archivo de configuración de PM2
+COPY ecosystem.config.js ./
 
 # Crear directorio para uploads
 RUN mkdir -p storage/uploads
@@ -51,5 +53,5 @@ USER nestjs
 
 EXPOSE 3000
 
-# Comando para ejecutar la aplicación
-CMD ["node", "dist/src/main.js"]
+# Usar PM2 para ejecutar la aplicación
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]
