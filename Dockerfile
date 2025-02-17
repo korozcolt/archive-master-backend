@@ -19,8 +19,9 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 
+# Crear directorios y asignar permisos
 RUN mkdir -p storage/uploads logs && \
-    chown -R node:node .
+    chown -R node:node /usr/src/app
 
 USER node
 
