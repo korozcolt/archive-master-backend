@@ -21,6 +21,7 @@ services:
       - '127.0.0.1:3000:3000'
     volumes:
       - ./storage/uploads:/usr/src/app/storage/uploads
+      - ./logs:/usr/src/app/logs
     depends_on:
       db:
         condition: service_healthy

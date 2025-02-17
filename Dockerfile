@@ -19,7 +19,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package*.json ./
 
-RUN mkdir -p storage/uploads && \
+RUN mkdir -p storage/uploads logs && \
     chown -R node:node .
 
 USER node
